@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ExternalLink, X, Sparkles } from 'lucide-react';
 import gsap from 'gsap';
@@ -98,39 +98,62 @@ export function WorkShowcase() {
         );
       }
 
-      // Project Cards Stagger & Image Parallax Reveal
+      // Project Cards Stagger & Image Curtain Reveal
       const cards = gsap.utils.toArray<HTMLElement>('.gsap-project-card');
       cards.forEach((card) => {
+        const imgContainer = card.querySelector('.project-img-container');
         const img = card.querySelector('img');
-        
-        gsap.fromTo(
-          card,
-          { opacity: 0, y: 50 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 88%',
-              toggleActions: 'play none none reverse',
-            },
-          }
-        );
+        const textRow = card.querySelector('.project-text-row');
+
+        if (imgContainer) {
+          gsap.fromTo(
+            imgContainer,
+            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', opacity: 0.8 },
+            {
+              clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)',
+              opacity: 1,
+              duration: 1.1,
+              ease: 'power3.inOut',
+              scrollTrigger: {
+                trigger: card,
+                start: 'top 82%',
+                toggleActions: 'play none none reverse',
+              },
+            }
+          );
+        }
 
         if (img) {
           gsap.fromTo(
             img,
-            { scale: 1.1 },
+            { scale: 1.25, filter: 'contrast(1.1) brightness(0.9)' },
             {
               scale: 1,
-              ease: 'none',
+              filter: 'contrast(1) brightness(1)',
+              duration: 1.2,
+              ease: 'power2.out',
               scrollTrigger: {
                 trigger: card,
-                start: 'top bottom',
-                end: 'bottom top',
-                scrub: true,
+                start: 'top 82%',
+                toggleActions: 'play none none reverse',
+              },
+            }
+          );
+        }
+
+        if (textRow) {
+          gsap.fromTo(
+            textRow,
+            { y: 20, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.7,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: card,
+                start: 'top 78%',
+                toggleActions: 'play none none reverse',
               },
             }
           );
@@ -140,6 +163,34 @@ export function WorkShowcase() {
 
     return () => ctx.revert();
   }, []);
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -5;
+    const rotateY = ((x - centerX) / centerX) * 5;
+
+    gsap.to(card, {
+      rotateX: rotateX,
+      rotateY: rotateY,
+      duration: 0.4,
+      ease: 'power2.out',
+      transformPerspective: 1000,
+    });
+  };
+
+  const handleMouseLeave = (e: MouseEvent<HTMLDivElement>) => {
+    gsap.to(e.currentTarget, {
+      rotateX: 0,
+      rotateY: 0,
+      duration: 0.6,
+      ease: 'power2.out',
+    });
+  };
 
   return (
     <section ref={sectionRef} id="work-showcase" className="w-full bg-white text-neutral-900 py-16 sm:py-24 px-6 sm:px-10 lg:px-16 font-sans">
@@ -182,21 +233,23 @@ export function WorkShowcase() {
               key={project.id}
               id={`project-card-${project.id}`}
               className="gsap-project-card group cursor-pointer"
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
               onClick={() => setSelectedProject(project)}
             >
               {/* Project Image Banner */}
-              <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] rounded-2xl overflow-hidden bg-neutral-100 mb-5 shadow-sm border border-neutral-200/80 group-hover:shadow-xl transition-all duration-500">
+              <div className="project-img-container relative w-full aspect-[16/9] sm:aspect-[2/1] rounded-2xl overflow-hidden bg-neutral-100 mb-5 shadow-sm border border-neutral-200/80 group-hover:shadow-2xl transition-shadow duration-500">
                 <img
                   src={project.image}
                   alt={project.title}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                  className="w-full h-full object-cover object-center group-hover:scale-[1.04] transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
               </div>
 
               {/* Title, Description & Action Button Row */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+              <div className="project-text-row flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
                 <div>
                   <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 group-hover:text-red-600 transition-colors duration-200">
                     {project.title}

@@ -1,6 +1,10 @@
 import { Hero } from './components/Hero';
 import { WorkShowcase } from './components/WorkShowcase';
 import { ServicesSection } from './components/ServicesSection';
+import { TestimonialsSection } from './components/TestimonialsSection';
+import { AwardsSection } from './components/AwardsSection';
+import { BlogSection } from './components/BlogSection';
+import { ClientsSection } from './components/ClientsSection';
 
 export default function App() {
   return (
@@ -8,7 +12,12 @@ export default function App() {
       <Hero />
       <WorkShowcase />
       <ServicesSection />
+      <TestimonialsSection />
+      <AwardsSection />
+      <BlogSection />
+      <ClientsSection />
     </main>
   );
 }
+
 

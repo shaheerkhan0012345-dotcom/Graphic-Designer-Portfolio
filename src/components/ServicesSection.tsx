@@ -43,17 +43,18 @@ export function ServicesSection() {
         );
       }
 
-      // Stagger reveal service cards
+      // Stagger 3D Flip reveal service cards
       const cards = gsap.utils.toArray<HTMLElement>('.gsap-service-card');
       gsap.fromTo(
         cards,
-        { opacity: 0, y: 45 },
+        { opacity: 0, y: 70, rotateX: -25, transformPerspective: 1000 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: 'power2.out',
+          rotateX: 0,
+          duration: 1,
+          stagger: 0.18,
+          ease: 'power3.out',
           scrollTrigger: {
             trigger: sectionRef.current,
             start: 'top 75%',
@@ -61,6 +62,19 @@ export function ServicesSection() {
           },
         }
       );
+
+      // Floating ambient motion for SVG icons
+      const icons = gsap.utils.toArray<HTMLElement>('.service-icon-wrapper');
+      icons.forEach((icon, i) => {
+        gsap.to(icon, {
+          y: -6,
+          rotate: i % 2 === 0 ? 3 : -3,
+          duration: 2.5 + i * 0.4,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        });
+      });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -198,7 +212,7 @@ export function ServicesSection() {
               onClick={() => setSelectedService(service)}
             >
               {/* Abstract Graphic Icon */}
-              <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300 ease-out">
+              <div className="service-icon-wrapper mb-6 transform group-hover:scale-110 transition-transform duration-300 ease-out">
                 {service.icon}
               </div>
 
