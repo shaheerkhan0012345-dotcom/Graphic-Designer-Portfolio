@@ -103,86 +103,86 @@ const CLIENT_LOGOS: ClientLogo[] = [
   },
 ];
 
+// Duplicate list for seamless infinite loop
+const DUPLICATED_LOGOS = [...CLIENT_LOGOS, ...CLIENT_LOGOS, ...CLIENT_LOGOS];
+
 export function ClientsSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const marqueeRef = useRef<HTMLDivElement>(null);
+  const tweenRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Eyebrow entrance
-      const eyebrow = sectionRef.current?.querySelector('.clients-eyebrow');
-      if (eyebrow) {
-        gsap.fromTo(
-          eyebrow,
-          { opacity: 0, x: -30 },
-          {
-            opacity: 1,
-            x: 0,
-            duration: 0.8,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: eyebrow,
-              start: 'top 90%',
-              toggleActions: 'play none none reverse',
-            },
-          }
-        );
+      // Continuous infinite horizontal marquee loop
+      if (marqueeRef.current) {
+        tweenRef.current = gsap.to(marqueeRef.current, {
+          xPercent: -33.33333,
+          ease: 'none',
+          duration: 22,
+          repeat: -1,
+        });
       }
-
-      // Logo cards stagger reveal
-      const logoCards = gsap.utils.toArray<HTMLElement>('.client-logo-card');
-      gsap.fromTo(
-        logoCards,
-        { opacity: 0, scale: 0.8, y: 20 },
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.08,
-          ease: 'back.out(1.5)',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse',
-          },
-        }
-      );
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      tweenRef.current?.kill();
+    };
   }, []);
+
+  const handleMouseEnter = () => {
+    tweenRef.current?.pause();
+  };
+
+  const handleMouseLeave = () => {
+    tweenRef.current?.play();
+  };
 
   return (
     <section
       ref={sectionRef}
       id="clients-section"
-      className="w-full bg-white text-neutral-900 py-12 sm:py-16 px-6 sm:px-10 lg:px-16 font-sans border-t border-neutral-100"
+      className="w-full bg-white text-neutral-900 py-10 sm:py-14 font-sans border-t border-neutral-100 overflow-hidden"
     >
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-12">
+      <div className="max-w-7xl mx-auto relative px-4">
         
-        {/* Left Eyebrow Label with Red Dot */}
-        <div className="clients-eyebrow shrink-0 flex items-center gap-2 text-xs font-bold tracking-widest text-neutral-700 uppercase">
-          <span className="w-2 h-2 rounded-full bg-red-600 inline-block animate-pulse" />
-          <span>CLIENTS</span>
-        </div>
+        {/* Soft edge gradient fades for smooth visual masking */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
 
-        {/* Right Logo Grid / Row */}
-        <div className="w-full flex-1 flex flex-wrap items-center justify-between sm:justify-start gap-4 sm:gap-6 lg:gap-8">
-          {CLIENT_LOGOS.map((client) => (
-            <div
-              key={client.id}
-              id={`client-card-${client.id}`}
-              title={client.name}
-              className="client-logo-card group w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-neutral-50/70 hover:bg-white border border-neutral-100 hover:border-neutral-200 shadow-none hover:shadow-lg hover:shadow-neutral-200/50 flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer"
-            >
-              <div className="transition-transform duration-300 group-hover:scale-110">
-                {client.svg}
+        {/* Marquee Wrapper Container */}
+        <div
+          className="overflow-hidden w-full py-3"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <div
+            ref={marqueeRef}
+            className="flex items-center gap-6 sm:gap-10 w-max"
+          >
+            {DUPLICATED_LOGOS.map((client, index) => (
+              <div
+                key={`${client.id}-${index}`}
+                id={`client-card-${client.id}-${index}`}
+                title={client.name}
+                className="group relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-neutral-50 hover:bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-sm hover:shadow-xl hover:shadow-neutral-200/80 flex items-center justify-center transition-all duration-300 transform hover:-translate-y-2 hover:scale-110 cursor-pointer shrink-0"
+              >
+                {/* SVG Logo Icon with Hover Scale & Glow Effect */}
+                <div className="transition-all duration-300 group-hover:scale-125 filter group-hover:drop-shadow-md">
+                  {client.svg}
+                </div>
+
+                {/* Subtle Hover Name Badge Tooltip */}
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-[10px] font-bold tracking-wider text-neutral-700 bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-md whitespace-nowrap shadow-xs pointer-events-none">
+                  {client.name}
+                </span>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
       </div>
     </section>
   );
 }
+
