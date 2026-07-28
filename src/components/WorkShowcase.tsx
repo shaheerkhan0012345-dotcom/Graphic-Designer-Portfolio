@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ExternalLink, X, Sparkles } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 import beautyBrandImg from '../assets/images/project_beauty_brand_1785216705577.jpg';
 import fintechAppImg from '../assets/images/project_fintech_app_1785216727205.jpg';
@@ -70,12 +74,79 @@ export function WorkShowcase() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [viewAllModalOpen, setViewAllModalOpen] = useState(false);
 
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Header entrance animation on scroll
+      if (headerRef.current) {
+        gsap.fromTo(
+          headerRef.current,
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+
+      // Project Cards Stagger & Image Parallax Reveal
+      const cards = gsap.utils.toArray<HTMLElement>('.gsap-project-card');
+      cards.forEach((card) => {
+        const img = card.querySelector('img');
+        
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 50 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 88%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+
+        if (img) {
+          gsap.fromTo(
+            img,
+            { scale: 1.1 },
+            {
+              scale: 1,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: card,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: true,
+              },
+            }
+          );
+        }
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="work-showcase" className="w-full bg-white text-neutral-900 py-16 sm:py-24 px-6 sm:px-10 lg:px-16 font-sans">
+    <section ref={sectionRef} id="work-showcase" className="w-full bg-white text-neutral-900 py-16 sm:py-24 px-6 sm:px-10 lg:px-16 font-sans">
       <div className="max-w-6xl mx-auto">
         
         {/* Top Header Row */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-16">
+        <div ref={headerRef} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-16">
           <div className="space-y-3">
             {/* Eyebrow Label with Red Dot */}
             <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-neutral-700 uppercase">
@@ -106,15 +177,11 @@ export function WorkShowcase() {
 
         {/* Projects List */}
         <div className="space-y-12 sm:space-y-16">
-          {PROJECTS.map((project, index) => (
-            <motion.article
+          {PROJECTS.map((project) => (
+            <article
               key={project.id}
               id={`project-card-${project.id}`}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group cursor-pointer"
+              className="gsap-project-card group cursor-pointer"
               onClick={() => setSelectedProject(project)}
             >
               {/* Project Image Banner */}
@@ -153,7 +220,7 @@ export function WorkShowcase() {
                   <span>View Work</span>
                 </button>
               </div>
-            </motion.article>
+            </article>
           ))}
         </div>
       </div>

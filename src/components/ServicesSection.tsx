@@ -1,6 +1,10 @@
-import { useState, ReactNode } from 'react';
+import { useState, ReactNode, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, CheckCircle2, Sparkles, X } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface ServiceItem {
   id: string;
@@ -14,6 +18,53 @@ interface ServiceItem {
 
 export function ServicesSection() {
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
+
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Header animation
+      if (headerRef.current) {
+        gsap.fromTo(
+          headerRef.current,
+          { opacity: 0, y: 35 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+
+      // Stagger reveal service cards
+      const cards = gsap.utils.toArray<HTMLElement>('.gsap-service-card');
+      gsap.fromTo(
+        cards,
+        { opacity: 0, y: 45 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 75%',
+            toggleActions: 'play none none reverse',
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   const services: ServiceItem[] = [
     {
@@ -116,11 +167,11 @@ export function ServicesSection() {
   ];
 
   return (
-    <section id="services-section" className="w-full bg-white text-neutral-900 py-16 sm:py-24 px-6 sm:px-10 lg:px-16 font-sans border-t border-neutral-100">
+    <section ref={sectionRef} id="services-section" className="w-full bg-white text-neutral-900 py-16 sm:py-24 px-6 sm:px-10 lg:px-16 font-sans border-t border-neutral-100">
       <div className="max-w-6xl mx-auto">
         
         {/* Top Header Row */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16 sm:mb-20">
+        <div ref={headerRef} className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16 sm:mb-20">
           <div className="space-y-3">
             {/* Eyebrow Label with Red Dot */}
             <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-neutral-700 uppercase">
@@ -139,15 +190,11 @@ export function ServicesSection() {
 
         {/* 2x2 Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16 lg:gap-20">
-          {services.map((service, index) => (
-            <motion.div
+          {services.map((service) => (
+            <div
               key={service.id}
               id={`service-card-${service.id}`}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group cursor-pointer flex flex-col items-start"
+              className="gsap-service-card group cursor-pointer flex flex-col items-start"
               onClick={() => setSelectedService(service)}
             >
               {/* Abstract Graphic Icon */}
@@ -165,7 +212,7 @@ export function ServicesSection() {
               <p className="text-neutral-500 text-base sm:text-lg leading-relaxed max-w-md font-normal">
                 {service.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
 

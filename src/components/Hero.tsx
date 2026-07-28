@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Menu, X } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dkpv0eax8/video/upload/v1785168093/Hero_animation_with_particles_202607270900_nrehse.mp4";
 
@@ -10,13 +14,63 @@ export function Hero() {
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
 
+  const heroRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const contactBtnRef = useRef<HTMLButtonElement>(null);
+
   const navItems = ['Home', 'About', 'Project', 'Blog', 'Contact'];
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Entrance Timeline for Hero
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1 } });
+
+      tl.fromTo(
+        headerRef.current,
+        { y: -30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8 }
+      )
+        .fromTo(
+          headlineRef.current,
+          { y: 50, opacity: 0, filter: 'blur(10px)' },
+          { y: 0, opacity: 1, filter: 'blur(0px)', duration: 1.1 },
+          '-=0.4'
+        )
+        .fromTo(
+          descriptionRef.current,
+          { y: 40, opacity: 0, filter: 'blur(8px)' },
+          { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.9 },
+          '-=0.7'
+        );
+
+      // Parallax scroll on video background
+      if (videoRef.current && heroRef.current) {
+        gsap.to(videoRef.current, {
+          yPercent: 15,
+          scale: 1.15,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+      }
+    }, heroRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="hero" className="relative w-full min-h-screen h-screen overflow-hidden bg-black text-white flex flex-col justify-between font-sans select-none">
+    <section ref={heroRef} id="hero" className="relative w-full min-h-screen h-screen overflow-hidden bg-black text-white flex flex-col justify-between font-sans select-none">
       {/* Background Video Layer with Ambient Dual-Tone Glow */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
@@ -36,14 +90,11 @@ export function Hero() {
       </div>
 
       {/* Header Navigation Bar */}
-      <header id="main-header" className="relative z-20 w-full px-6 sm:px-10 lg:px-16 py-6 sm:py-8 flex items-center justify-between">
+      <header ref={headerRef} id="main-header" className="relative z-20 w-full px-6 sm:px-10 lg:px-16 py-6 sm:py-8 flex items-center justify-between">
         {/* Brand Logo */}
-        <motion.a
+        <a
           id="brand-logo"
           href="#"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
           className="flex items-center gap-2.5 group cursor-pointer"
         >
           {/* Custom Geometric Interlocking Polygon Icon */}
@@ -71,14 +122,11 @@ export function Hero() {
           <span className="text-2xl font-bold tracking-tight text-white font-sans">
             Pixlio<span className="text-white font-extrabold">.</span>
           </span>
-        </motion.a>
+        </a>
 
         {/* Desktop Navigation Links */}
-        <motion.nav
+        <nav
           id="desktop-nav"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
           className="hidden md:flex items-center space-x-8 lg:space-x-12"
         >
           {navItems.map((item) => (
@@ -105,17 +153,15 @@ export function Hero() {
               )}
             </button>
           ))}
-        </motion.nav>
+        </nav>
 
         {/* Right CTA Button ("Contact Me") */}
-        <motion.div
+        <div
           id="cta-wrapper"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
           className="hidden sm:flex items-center"
         >
           <button
+            ref={contactBtnRef}
             id="contact-me-btn"
             onClick={() => setShowContactModal(true)}
             className="group relative flex items-center gap-3 bg-white text-black font-semibold text-sm sm:text-base px-5 py-2.5 rounded-full shadow-lg hover:bg-neutral-100 active:scale-95 transition-all duration-200 cursor-pointer"
@@ -125,7 +171,7 @@ export function Hero() {
             </span>
             <span>Contact Me</span>
           </button>
-        </motion.div>
+        </div>
 
         {/* Mobile Menu Button */}
         <div id="mobile-menu-toggle" className="md:hidden flex items-center">
@@ -185,36 +231,30 @@ export function Hero() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-end justify-between gap-8 md:gap-12">
           
           {/* Main Left Headline */}
-          <motion.div
+          <div
             id="hero-headline"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
             className="max-w-2xl"
           >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-[1.03]">
+            <h1 ref={headlineRef} className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-[1.03]">
               Crafting Digital
               <br />
               Products.
             </h1>
-          </motion.div>
+          </div>
 
           {/* Right Subtitle Text */}
-          <motion.div
+          <div
             id="hero-description"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.45 }}
             className="md:text-right pb-1 sm:pb-2"
           >
-            <p className="text-xl sm:text-2xl md:text-2xl text-white/95 font-normal leading-snug tracking-tight max-w-xs sm:max-w-sm">
+            <p ref={descriptionRef} className="text-xl sm:text-2xl md:text-2xl text-white/95 font-normal leading-snug tracking-tight max-w-xs sm:max-w-sm">
               I create thoughtful
               <br />
               designs focused on
               <br />
               real user needs.
             </p>
-          </motion.div>
+          </div>
 
         </div>
       </div>
