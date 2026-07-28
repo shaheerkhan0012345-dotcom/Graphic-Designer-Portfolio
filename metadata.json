@@ -1,0 +1,6 @@
+{
+  "name": "Pixlio Hero Section",
+  "description": "A high-impact portfolio hero section featuring dramatic dual-tone crimson lighting, clean typography, and interactive navigation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
