@@ -5,6 +5,7 @@ import { TestimonialsSection } from './components/TestimonialsSection';
 import { AwardsSection } from './components/AwardsSection';
 import { BlogSection } from './components/BlogSection';
 import { ClientsSection } from './components/ClientsSection';
+import { FooterSection } from './components/FooterSection';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
       <AwardsSection />
       <BlogSection />
       <ClientsSection />
+      <FooterSection />
     </main>
   );
 }

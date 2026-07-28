@@ -171,11 +171,6 @@ export function ClientsSection() {
                 <div className="transition-all duration-300 group-hover:scale-125 filter group-hover:drop-shadow-md">
                   {client.svg}
                 </div>
-
-                {/* Subtle Hover Name Badge Tooltip */}
-                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-[10px] font-bold tracking-wider text-neutral-700 bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-md whitespace-nowrap shadow-xs pointer-events-none">
-                  {client.name}
-                </span>
               </div>
             ))}
           </div>
